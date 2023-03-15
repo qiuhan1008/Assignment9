@@ -1,0 +1,121 @@
+---
+title: "A9_ZHANG_20158140"
+author: "Qiuhan Zhang"
+date: "2023-03-15"
+output: html_document
+---
+
+[My repository](https://github.com/qiuhan1008/Assignment9.git)
+
+#### Load Required Library
+```{r message=FALSE, warning=FALSE}
+#install.packages("doParallel")
+library(doParallel)
+library(parallel)
+library(foreach)
+```
+
+#### Cores Number
+```{r}
+detectCores()
+```
+
+#### For loop
+```{r}
+#set data seed
+set.seed(100000)
+
+#create empty vector
+means <- numeric(4000)
+
+#start time
+start_time_1 <- Sys.time()
+
+#serial loop
+for (i in 1:4000) {
+  means[i] <- mean(rnorm(100000, mean = 10, sd = 3))
+}
+
+#end time
+end_time_1 <- Sys.time()
+```
+
+#### Time used
+```{r}
+RunTime <- end_time_1 - start_time_1
+RunTime
+```
+
+#### Multi-threaded program & Serial Program
+```{r}
+#mylti-threading runtime
+MTRunTime <- RunTime / 8
+#how much faster
+faster <- RunTime - MTRunTime
+faster
+```
+
+#### loop modify
+```{r}
+#find core number
+Cores <- parallel::makeCluster(detectCores())
+
+#activate Multi-threading
+doParallel::registerDoParallel(Cores)
+
+#start time
+start_time_2 <- Sys.time()
+
+#rewrite for loop
+parallel <- foreach(i = 1:4000, .combine = 'rbind') %dopar% {
+  means[i] <- mean(rnorm(100000, mean = 10, sd = 3))
+  }
+
+#end time
+end_time_2 <- Sys.time()
+
+#de-activate multi-threading
+parallel::stopCluster(Cores)
+```
+
+#### Run Time
+```{r}
+#cakculate the run time for parallel loop
+RunTime_Para <- end_time_2 - start_time_2
+RunTime_Para
+```
+
+```{r}
+#compare serial loop with theoretical run time
+cat("serial loop run time:", RunTime, "\n")
+cat("theoretical parallel run time:", MTRunTime, "\n")
+cat("parallel loop run time", RunTime_Para)
+```
+
+#### Results:
+
+The parallel loop is a much efective way compared with serial loop. Also, we have a similar actual runtime compared with theoretical parallel run time. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
